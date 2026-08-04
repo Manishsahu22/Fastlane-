@@ -20,5 +20,14 @@ jobs:
           ruby-version: '3.3'
           bundler-cache: true
 
+      - name: Install Fastlane
+        run: bundle install
+
+      - name: Check Fastlane
+        run: bundle exec fastlane --version
+
       - name: Run Fastlane
-        run: bundle exec fastlane ios test
+        run: bundle exec fastlane android test
+
+      - name: Start Upterm
+        uses: lhotari/action-upterm@v1
