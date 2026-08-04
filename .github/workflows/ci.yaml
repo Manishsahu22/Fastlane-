@@ -24,9 +24,9 @@ jobs:
       - name: Check Fastlane
         run: bundle exec fastlane --version
 
-      # Start Upterm BEFORE Fastlane
+      # Upterm connectivity test
       - name: Start Upterm
-        uses: lhotari/action-upterm@v1
+        uses: owenthereal/action-upterm@v1
 
       - name: Run Fastlane
         run: bundle exec fastlane android test
