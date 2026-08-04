@@ -1,16 +1,18 @@
-name: Android CI Demo
+name: iOS Fastlane Test
 
 on:
   workflow_dispatch:
 
 jobs:
-  android-ci:
-    runs-on: ubuntu-latest
+  ios-test:
+    runs-on: macos-latest
 
     steps:
-
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Start Upterm
+        uses: lhotari/action-upterm@v1
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
@@ -18,14 +20,5 @@ jobs:
           ruby-version: '3.3'
           bundler-cache: true
 
-      - name: Install Fastlane
-        run: bundle install
-
-      - name: Check Fastlane
-        run: bundle exec fastlane --version
-
       - name: Run Fastlane
-        run: bundle exec fastlane android test
-
-      - name: Start Upterm
-        uses: lhotari/action-upterm@v1
+        run: bundle exec fastlane ios test

@@ -1,13 +1,7 @@
-default_platform(:android)
+default_platform(:ios)
 
-platform :android do
-
-  desc "Test Fastlane installation"
+platform :ios do
   lane :test do
-    UI.message("================================")
     UI.message("Fastlane is working!")
-    UI.message("Running on GitHub Actions runner")
-    UI.message("================================")
   end
-
 end
