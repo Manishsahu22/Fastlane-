@@ -11,6 +11,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Start Upterm
+        uses: lhotari/action-upterm@v1
+
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
@@ -23,9 +26,5 @@ jobs:
       - name: Check Fastlane
         run: bundle exec fastlane --version
 
-      - name: Start Upterm
-        uses: lhotari/action-upterm@v1
-
       - name: Run Fastlane
         run: bundle exec fastlane ios test
-
