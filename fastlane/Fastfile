@@ -1,0 +1,13 @@
+default_platform(:android)
+
+platform :android do
+
+  desc "Test Fastlane installation"
+  lane :test do
+    UI.message("================================")
+    UI.message("Fastlane is working!")
+    UI.message("Running on GitHub Actions runner")
+    UI.message("================================")
+  end
+
+end
