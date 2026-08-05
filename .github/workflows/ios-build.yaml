@@ -45,18 +45,22 @@ jobs:
       # 5. Run lint
       - name: Run lint
         run: npm run lint
-        continue-on-error: true
+      
 
       # 6. Generate native iOS project
       - name: Generate iOS project
         run: npx expo prebuild --platform ios
 
-      # 7. Setup Ruby
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: "3.3"
-          bundler-cache: true
+         ruby-version: "3.3"
+         bundler-cache: false
+
+      - name: Install Ruby dependencies
+        run: |
+          bundle config set frozen false
+          bundle install
 
       # 8. Run Fastlane
       - name: Build with Fastlane
