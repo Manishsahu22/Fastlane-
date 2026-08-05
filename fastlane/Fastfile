@@ -34,7 +34,7 @@ platform :ios do
     elsif project
       build_opts[:project] = project
     else
-      UI.user_error\!("No .xcworkspace or .xcodeproj found in ios/ directory")
+      UI.user_error!("No .xcworkspace or .xcodeproj found in ios/ directory")
     end
 
     # Build iOS application
