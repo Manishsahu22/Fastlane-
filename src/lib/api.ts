@@ -1,5 +1,4 @@
-// eslint-disable-next-line import/no-named-as-default-member
-import axios from 'axios';
+import { create } from 'axios';
 import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 
@@ -21,7 +20,7 @@ const resolveBaseURL = async (): Promise<string> => {
 };
 
 // Kiosk device client — sends X-Walkin-Token header
-export const kioskApi = axios.create({
+export const kioskApi = create({
   timeout: 15000,
   validateStatus: () => true,
   headers: { 'Content-Type': 'application/json' },
@@ -35,7 +34,7 @@ kioskApi.interceptors.request.use(async (config) => {
 kioskApi.interceptors.response.use((r) => r.data, (e) => Promise.reject(e));
 
 // Staff device client — sends X-Walkin-Staff-Token header
-export const staffApi = axios.create({
+export const staffApi = create({
   timeout: 15000,
   validateStatus: () => true,
   headers: { 'Content-Type': 'application/json' },

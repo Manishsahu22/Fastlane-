@@ -26,6 +26,7 @@ export default function SuccessScreen() {
     const timer = setTimeout(() => router.replace('/kiosk/welcome'), TIMEOUT * 1000);
     const interval = setInterval(() => setCountdown((c) => Math.max(0, c - 1)), 1000);
     return () => { clearTimeout(timer); clearInterval(interval); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -45,7 +46,7 @@ export default function SuccessScreen() {
         <QliniQIcon size={isTablet ? 52 : 36} color="rgba(218,253,173,0.35)" />
 
         <Text style={[styles.title, isTablet && styles.titleLg]}>
-          You're Checked In!
+          You&apos;re Checked In!
         </Text>
         <Text style={[styles.subtitle, isTablet && styles.subtitleLg]}>
           Please have a seat.{'\n'}A staff member will call your name shortly.

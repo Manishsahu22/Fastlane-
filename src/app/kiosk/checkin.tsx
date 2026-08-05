@@ -119,7 +119,7 @@ export default function CheckinScreen() {
         <QliniQWordmark width={isTablet ? 200 : 160} color={Colors.white} />
         <Text style={[styles.headerTitle, isTablet && styles.headerTitleLg]}>Walk-in Check In</Text>
         <Text style={[styles.headerSub, isTablet && styles.headerSubLg]}>
-          Enter your details and we'll add you to the queue.
+          Enter your details and we&apos;ll add you to the queue.
         </Text>
       </View>
 
@@ -179,7 +179,7 @@ export default function CheckinScreen() {
             />
             {!!errors.phone
               ? <Text style={[styles.error, isTablet && styles.errorLg]}>{errors.phone}</Text>
-              : <Text style={[styles.hint, isTablet && styles.hintLg]}>We use your phone to check if you're already a patient.</Text>
+              : <Text style={[styles.hint, isTablet && styles.hintLg]}>We use your phone to check if you&apos;re already a patient.</Text>
             }
           </View>
 

@@ -18,6 +18,7 @@ export default function SplashScreen() {
         router.replace('/pair');
       }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
