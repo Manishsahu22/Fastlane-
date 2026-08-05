@@ -9,11 +9,10 @@ platform :ios do
     puts "Starting iOS build"
     puts "======================================"
 
-    # Install CocoaPods dependencies (generates .xcworkspace)
-    cocoapods(
-      podfile: "ios/Podfile",
-      clean_install: true
-    )
+    # CocoaPods must run inside the ios/ directory
+    Dir.chdir("ios") do
+      sh("pod install --clean-install")
+    end
 
     # Find the workspace (created by pod install) or fall back to project
     workspace = Dir.glob("ios/*.xcworkspace").first
