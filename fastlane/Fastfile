@@ -17,7 +17,7 @@ platform :ios do
 
     # Build iOS application
     build_app(
-      workspace: "ios/qliniq-kiosk.xcworkspace",
+      project: "ios/qliniq-kiosk.xcodeproj",
       scheme: "qliniq-kiosk",
       configuration: "Release",
       skip_codesigning: true,
