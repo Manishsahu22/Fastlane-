@@ -21,7 +21,7 @@ jobs:
     steps:
 
       # 1. Checkout source code
-      - name: Checkout code
+      - name: Checkout source code
         uses: actions/checkout@v4
 
       # 2. Setup Node.js
@@ -45,24 +45,41 @@ jobs:
       # 5. Run lint
       - name: Run lint
         run: npm run lint
-        continue-on-error: true
 
       # 6. Generate native iOS project
       - name: Generate iOS project
         run: npx expo prebuild --platform ios
 
-      # 7. Setup Ruby
+      # 7. Check generated iOS project
+      - name: Check iOS files
+        run: |
+          echo "===== iOS directory ====="
+          ls -la ios
+
+          echo "===== Xcode projects ====="
+          find ios -maxdepth 1 -name "*.xcodeproj" -print
+
+          echo "===== Xcode workspaces ====="
+          find ios -maxdepth 1 -name "*.xcworkspace" -print
+
+      # 8. Setup Ruby
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.3"
-          bundler-cache: true
+          bundler-cache: false
 
-      # 8. Run Fastlane
+      # 9. Install Ruby dependencies
+      - name: Install Ruby dependencies
+        run: |
+          bundle config set frozen false
+          bundle install
+
+      # 10. Run Fastlane
       - name: Build with Fastlane
         run: bundle exec fastlane ios build
 
-      # 9. Upload iOS Simulator build
+      # 11. Upload iOS Simulator build
       - name: Upload iOS build artifact
         if: success()
         uses: actions/upload-artifact@v4
@@ -72,7 +89,7 @@ jobs:
             ~/Library/Developer/Xcode/DerivedData/**/Build/Products/Release-iphonesimulator/*.app
           if-no-files-found: error
 
-      # 10. Start Upterm if anything failed
+      # 12. Start Upterm if anything failed
       - name: Start Upterm
         if: failure()
         uses: owenthereal/action-upterm@v1
