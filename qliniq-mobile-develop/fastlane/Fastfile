@@ -1,0 +1,31 @@
+default_platform(:ios)
+
+platform :ios do
+
+  desc "Build iOS application"
+  lane :build do
+
+    puts "======================================"
+    puts "Starting iOS build"
+    puts "======================================"
+
+    # Install CocoaPods dependencies
+    cocoapods(
+      clean_install: true
+    )
+
+    # Build iOS application
+    build_app(
+      scheme: "qliniq-kiosk",
+      configuration: "Release",
+      skip_codesigning: true,
+      destination: "generic/platform=iOS Simulator"
+    )
+
+    puts "======================================"
+    puts "iOS build completed successfully"
+    puts "======================================"
+
+  end
+
+end

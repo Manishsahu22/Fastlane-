@@ -1,0 +1,70 @@
+name: iOS Build CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+  pull_request:
+    branches:
+      - main
+      - develop
+
+  workflow_dispatch:
+
+jobs:
+  ios-build:
+    name: iOS Build
+    runs-on: macos-latest
+
+    steps:
+
+      # 1. Checkout source code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # 3. Install JavaScript dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. Run lint
+      - name: Run lint
+        run: npm run lint
+
+      # 5. Generate native iOS project
+      - name: Generate iOS project
+        run: npx expo prebuild --platform ios
+
+      # 6. Setup Ruby
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+
+      # 7. Run Fastlane
+      - name: Build with Fastlane
+        run: bundle exec fastlane ios build
+
+      # 8. Upload iOS Simulator build
+      - name: Upload iOS build artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build
+          path: |
+            ~/Library/Developer/Xcode/DerivedData/**/Build/Products/Release-iphonesimulator/*.app
+          if-no-files-found: error
+
+      # 9. Start Upterm if anything failed
+      - name: Start Upterm
+        if: failure()
+        uses: owenthereal/action-upterm@v1
