@@ -66,6 +66,14 @@ jobs:
       - name: Build with Fastlane
         run: bundle exec fastlane ios build
 
+      - name: Check iOS files
+        run: |
+         echo "=== iOS files ==="
+         ls -la ios
+         echo "=== Workspaces ==="
+         find ios -maxdepth 1 -name "*.xcworkspace" -print
+         echo "=== Projects ==="
+         find ios -maxdepth 1 -name "*.xcodeproj" -print
       # 9. Upload iOS Simulator build
       - name: Upload iOS build artifact
         if: success()
