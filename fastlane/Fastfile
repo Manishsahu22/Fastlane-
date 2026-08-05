@@ -11,11 +11,13 @@ platform :ios do
 
     # Install CocoaPods dependencies
     cocoapods(
+      podfile: "ios/Podfile",
       clean_install: true
     )
 
     # Build iOS application
     build_app(
+      workspace: "ios/qliniq-kiosk.xcworkspace",
       scheme: "qliniq-kiosk",
       configuration: "Release",
       skip_codesigning: true,
