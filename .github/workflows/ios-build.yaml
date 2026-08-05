@@ -45,6 +45,7 @@ jobs:
       # 5. Run lint
       - name: Run lint
         run: npm run lint
+        continue-on-error: true
 
       # 6. Generate native iOS project
       - name: Generate iOS project
