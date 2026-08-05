@@ -2,7 +2,7 @@ import { kioskApi, staffApi } from '../api';
 import {
   setStored, removeStored,
   KIOSK_TOKEN_KEY, STAFF_TOKEN_KEY,
-  saveDeviceRole, saveLocationName,
+  saveDeviceRole,
   DeviceRole,
 } from '../storage';
 

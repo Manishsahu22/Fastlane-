@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 import { FontAwesome5 } from '@expo/vector-icons';
@@ -13,7 +13,7 @@ export default function WelcomeScreen() {
   const [locationName, setLocationName] = useState('');
   const { isTablet } = useLayout();
   const insets = useSafeAreaInsets();
-  const pulse = useRef(new Animated.Value(1)).current;
+  const pulse = useMemo(() => new Animated.Value(1), []);
 
   useEffect(() => {
     getLocationName().then((n) => { if (n) setLocationName(n); });

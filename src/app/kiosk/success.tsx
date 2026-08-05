@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 import { FontAwesome5 } from '@expo/vector-icons';
@@ -14,8 +14,8 @@ export default function SuccessScreen() {
   const [countdown, setCountdown] = useState(TIMEOUT);
   const { isTablet } = useLayout();
   const insets = useSafeAreaInsets();
-  const scale = useRef(new Animated.Value(0.6)).current;
-  const opacity = useRef(new Animated.Value(0)).current;
+  const scale = useMemo(() => new Animated.Value(0.6), []);
+  const opacity = useMemo(() => new Animated.Value(0), []);
 
   useEffect(() => {
     Animated.parallel([

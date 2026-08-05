@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-named-as-default-member
 import axios from 'axios';
 import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
