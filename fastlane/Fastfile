@@ -9,19 +9,36 @@ platform :ios do
     puts "Starting iOS build"
     puts "======================================"
 
-    # Install CocoaPods dependencies
+    # Install CocoaPods dependencies (generates .xcworkspace)
     cocoapods(
       podfile: "ios/Podfile",
       clean_install: true
     )
 
-    # Build iOS application
-    build_app(
+    # Find the workspace (created by pod install) or fall back to project
+    workspace = Dir.glob("ios/*.xcworkspace").first
+    project   = Dir.glob("ios/*.xcodeproj").first
+
+    puts "Workspace: #{workspace}"
+    puts "Project:   #{project}"
+
+    build_opts = {
       scheme: "qliniq-kiosk",
       configuration: "Release",
       skip_codesigning: true,
       destination: "generic/platform=iOS Simulator"
-    )
+    }
+
+    if workspace
+      build_opts[:workspace] = workspace
+    elsif project
+      build_opts[:project] = project
+    else
+      UI.user_error\!("No .xcworkspace or .xcodeproj found in ios/ directory")
+    end
+
+    # Build iOS application
+    build_app(build_opts)
 
     puts "======================================"
     puts "iOS build completed successfully"
