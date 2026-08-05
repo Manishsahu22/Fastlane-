@@ -73,6 +73,7 @@ jobs:
       - name: Install Ruby dependencies
         run: |
           bundle config set frozen false
+          bundle lock --add-platform ruby
           bundle install
 
       # 10. Run Fastlane
