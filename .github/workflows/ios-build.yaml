@@ -75,20 +75,26 @@ jobs:
           bundle lock --add-platform ruby
           bundle install
 
-      # 10. Run Fastlane (WITH TIMEOUT FIX)
+      # 10. Run Fastlane (Simulator Build - No Code Signing Required)
       - name: Build with Fastlane
         run: FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT=120 FASTLANE_XCODEBUILD_SETTINGS_RETRIES=6 bundle exec fastlane ios build
 
-      # 11. Upload iOS Build artifact
+      # 11. Zip the .app bundle for artifact upload
+      - name: Zip .app bundle
+        run: |
+          cd build_output/Build/Products/Release-iphonesimulator/
+          zip -r qliniq-kiosk-simulator.zip QliniQKiosk.app
+
+      # 12. Upload iOS build artifact (.zip containing QliniQKiosk.app)
       - name: Upload iOS build artifact
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: ios-build
-          path: build/qliniq-kiosk.ipa
+          name: ios-simulator-build
+          path: build_output/Build/Products/Release-iphonesimulator/qliniq-kiosk-simulator.zip
           if-no-files-found: error
 
-      # 12. Start Upterm if anything failed
+      # 13. Start Upterm if anything failed
       - name: Start Upterm
         if: failure()
         uses: owenthereal/action-upterm@v1
