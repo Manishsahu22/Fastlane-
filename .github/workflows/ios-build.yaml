@@ -1,100 +1,83 @@
-name: iOS Build CI
+name: iOS CI/CD Pipeline - Firebase Distribution
 
 on:
   push:
     branches:
       - main
       - develop
-
-  pull_request:
-    branches:
-      - main
-      - develop
-
   workflow_dispatch:
+    inputs:
+      generate_certs_first:
+        description: 'Set to true ONLY for the initial run to create certificates in Match repo'
+        required: false
+        default: 'false'
 
 jobs:
-  ios-build:
-    name: iOS Build
-    runs-on: macos-latest
+  build-and-deploy:
+    runs-on: macos-13
+    
+    # Permissions required for Google Workload Identity Federation (WIF)
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
-      # 1. Checkout source code
-      - name: Checkout source code
-        uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      # 2. Setup Node.js
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Node.js (For React Native / JS dependencies)
+        uses: actions/setup-node@v3
         with:
-          node-version: "22"
-          cache: npm
+          node-version: '18'
+          cache: 'yarn' # Change to 'npm' if you use npm instead of yarn
 
-      # 3. Install JavaScript dependencies
-      - name: Install dependencies
-        run: npm ci
-
-      # 4. Install ESLint dependencies
-      - name: Install ESLint
+      - name: Install JavaScript Dependencies
         run: |
-          npm install --no-save \
-            eslint@^9.0.0 \
-            eslint-config-expo@~56.0.4
+          yarn install --frozen-lockfile # Or 'npm ci' if using npm
 
-      # 5. Run lint
-      - name: Run lint
-        run: npm run lint
-
-      # 6. Generate native iOS project
-      - name: Generate iOS project
-        run: npx expo prebuild --platform ios
-
-      # 7. Check generated iOS project
-      - name: Check iOS files
-        run: |
-          echo "===== iOS directory ====="
-          ls -la ios
-
-          echo "===== Xcode projects ====="
-          find ios -maxdepth 1 -name "*.xcodeproj" -print
-
-          echo "===== Xcode workspaces ====="
-          find ios -maxdepth 1 -name "*.xcworkspace" -print
-
-      # 8. Setup Ruby
-      - name: Setup Ruby
+      - name: Set up Ruby & Fastlane
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: "3.3"
-          bundler-cache: false
+          ruby-version: '3.1'
+          bundler-cache: true
 
-      # 9. Install Ruby dependencies
-      - name: Install Ruby dependencies
+      - name: Install CocoaPods
         run: |
-          bundle config set frozen false
-          bundle lock --add-platform ruby
-          bundle install
+          cd ios
+          pod install
+          cd ..
 
-      # 10. Run Fastlane (Simulator Build - No Code Signing Required)
-      - name: Build with Fastlane
-        run: FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT=120 FASTLANE_XCODEBUILD_SETTINGS_RETRIES=6 bundle exec fastlane ios build
-
-      # 11. Zip the .app bundle for artifact upload
-      - name: Zip .app bundle
-        run: |
-          cd build_output/Build/Products/Release-iphonesimulator/
-          zip -r qliniq-kiosk-simulator.zip QliniQKiosk.app
-
-      # 12. Upload iOS build artifact (.zip containing QliniQKiosk.app)
-      - name: Upload iOS build artifact
-        if: success()
-        uses: actions/upload-artifact@v4
+      - name: Install SSH Key for Match Vault Repository
+        uses: webfactory/ssh-agent@v0.7.0
         with:
-          name: ios-simulator-build
-          path: build_output/Build/Products/Release-iphonesimulator/qliniq-kiosk-simulator.zip
-          if-no-files-found: error
+          ssh-private-key: ${{ secrets.MATCH_GIT_SSH_PRIVATE_KEY }}
 
-      # 13. Start Upterm if anything failed
-      - name: Start Upterm
-        if: failure()
-        uses: owenthereal/action-upterm@v1
+      # Authenticate to Google Cloud / Firebase using Workload Identity Federation
+      - name: Authenticate to Google Cloud (WIF)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      # Step A: Run ONCE with generate_certs_first = true to push certs to your empty Match repo
+      - name: Run Initial Certificate Generation (One-Time Setup)
+        if: ${{ github.event.inputs.generate_certs_first == 'true' }}
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_B64: ${{ secrets.APP_STORE_CONNECT_API_KEY_B64 }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+        run: |
+          bundle exec fastlane ios generate_certs
+
+      # Step B: Regular automated build & deploy step 
+      - name: Build & Deploy to Firebase
+        if: ${{ github.event.inputs.generate_certs_first != 'true' }}
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_B64: ${{ secrets.APP_STORE_CONNECT_API_KEY_B64 }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+        run: |
+          bundle exec fastlane ios firebase_beta

@@ -1,39 +1,58 @@
 default_platform(:ios)
 
 platform :ios do
-  desc "Build iOS application for Simulator (.app bundle)"
-  lane :build do
-    puts "======================================"
-    puts "Starting iOS build..."
-    puts "======================================"
 
-    # Install CocoaPods dependencies
-    cocoapods(
-      clean_install: true,
-      podfile: "./ios/Podfile"
+  private_lane :authenticate_api_key do
+    app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+      key_content: ENV["APP_STORE_CONNECT_API_KEY_B64"],
+      is_key_content_base64: true
     )
-
-    # Build the app for the Simulator
-    build_app(
-      workspace: "ios/QliniqKiosk.xcworkspace",
-      scheme: "QliniQKiosk",
-      configuration: "Release",
-      
-      # 1. Target the generic iOS Simulator (THIS IS THE FIX)
-      destination: "generic/platform=iOS Simulator",
-      
-      # 2. Force the output into a specific folder so GitHub Actions can find it
-      derived_data_path: "./build_output",
-      
-      # 3. Tell Fastlane to skip Archive and IPA packaging
-      skip_archive: true,
-      skip_package_ipa: true,
-      skip_codesigning: true
-    )
-
-    puts "======================================"
-    puts "Build completed!"
-    puts "Output: build_output/Build/Products/Release-iphonesimulator/QliniQKiosk.app"
-    puts "======================================"
   end
+
+  desc "ONE-TIME SETUP: Generate fresh certs and push to Git Vault"
+  lane :generate_certs do
+    authenticate_api_key
+    match(
+      type: "adhoc",
+      readonly: false,
+      force: true
+    )
+  end
+
+  desc "BUILD & DISTRIBUTE: Fetch certs, compile app, and upload to Firebase"
+  lane :firebase_beta do
+    authenticate_api_key
+    setup_ci
+
+    # Fetch existing profile from match git repository
+    match(
+      type: "adhoc",
+      readonly: true
+    )
+
+    # Compile the app using the match AdHoc profile
+    gym(
+      workspace: "ios/QliniQKiosk.xcworkspace", 
+      scheme: "QliniQKiosk",                    
+      clean: true,
+      export_method: "ad-hoc",
+      export_options: {
+        method: "ad-hoc",
+        provisioningProfiles: {
+          "com.scyllatech.qliniqkiosk" => "match AdHoc com.scyllatech.qliniqkiosk"
+        }
+      },
+      xcargs: "DEVELOPMENT_TEAM='3M66ZMAKG3' CODE_SIGN_STYLE='Manual' CODE_SIGN_IDENTITY='Apple Distribution' PROVISIONING_PROFILE_SPECIFIER='match AdHoc com.scyllatech.qliniqkiosk'"
+    )
+
+    # Upload to Firebase App Distribution
+   firebase_app_distribution(
+      app: ENV["FIREBASE_APP_ID"],
+      groups: "test-1",  # Automatically sends invite email to everyone in the 'testers' group
+      release_notes: "Automated build from GitHub Actions"
+    )
+  end
+
 end
